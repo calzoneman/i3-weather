@@ -1,0 +1,47 @@
+#!/usr/bin/python3
+
+import json
+import sys
+import weather
+import time
+
+WEATHER_JSON = {
+    'name': 'weather',
+    'full_text': ''
+}
+WEATHER_TIME = time.time()
+UPDATE_INTERVAL = 180
+
+def getline():
+    try:
+        line = sys.stdin.readline().strip()
+        if not line:
+            sys.exit(3)
+        return line
+    except KeyboardInterrupt:
+        sys.exit()
+
+def sendline(line):
+    sys.stdout.write(line + '\n')
+    sys.stdout.flush()
+
+if __name__ == '__main__':
+    print(getline())
+    print(getline())
+
+    while True:
+        line, prefix = getline(), ''
+        if line.startswith(','):
+            line, prefix = line[1:], ','
+
+        j = json.loads(line)
+        j = j[0:-2] + [WEATHER_JSON] + j[-2:]
+        sendline(prefix + json.dumps(j))
+
+        if time.time() - UPDATE_INTERVAL > WEATHER_TIME or WEATHER_JSON['full_text'] == '':
+            WEATHER_JSON = {
+                'name': 'weather',
+                # Update the below line to your WOEID and preferred unit of temperature
+                'full_text': weather.get_weather('12773700', 'f')
+            }
+            WEATHER_TIME = time.time()

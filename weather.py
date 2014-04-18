@@ -1,70 +1,65 @@
 #!/usr/bin/python3
 import argparse
+from functools import partial
 import json
+import logging
 import requests
 import sys
 import time
 
 from bs4 import BeautifulSoup
 
-def get_weather(woeid, unit):
-    url = 'http://weather.yahooapis.com/forecastrss?w={}&u={}'.format(woeid, unit)
+def get_weather(woeid, unit, format):
+    url = ('http://weather.yahooapis.com/forecastrss?w={}&u={}'
+           ''.format(woeid, unit.lower()))
+    logging.info("Fetching %s" % url)
     r = requests.get(url)
     if r.status_code != 200:
-        return 'error'
+        return 'weather: %s' % r.status_code
 
     s = BeautifulSoup(r.text)
-    location = s.find('yweather:location')
-    condition = s.find('yweather:condition')
-    return '{}, {}: {}, {}\u00b0{}'.format(location['city'], location['region'],
-                                           condition['text'], condition['temp'], unit)
-
-WEATHER_JSON = {
-    'name': 'weather',
-    'full_text': ''
-}
-WEATHER_TIME = time.time()
-UPDATE_INTERVAL = 180
-
-def getline():
-    try:
-        line = sys.stdin.readline().strip()
-        if not line:
-            sys.exit(3)
-        return line
-    except KeyboardInterrupt:
-        sys.exit()
-
-def sendline(line):
-    sys.stdout.write(line + '\n')
-    sys.stdout.flush()
+    data = {'unit': unit}
+    data.update(s.find('yweather:location').attrs)
+    data.update(s.find('yweather:condition').attrs)
+    return args.format.format(**data)
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('woeid')
-    p.add_argument('--unit', default='f')
+    p.add_argument('--format', metavar='F',
+                   default='{city}, {region}: {text}, {temp}°{unit}',
+                   help="format string for output")
+    p.add_argument('--position', metavar='P', type=int, default=-2,
+                   help="position of output in JSON when wrapping i3status")
+    p.add_argument('--unit', metavar='U', default='f',
+                   help="unit for temperature")
+    p.add_argument('--update-interval', metavar='I', type=int, default=60*3,
+                   help="update interval in seconds")
     p.add_argument('--wrap-i3-status', action='store_true')
     args = p.parse_args()
 
+    _get_weather = partial(get_weather, args.woeid, args.unit, args.format)
+
     if args.wrap_i3_status:
-        print(getline())
-        print(getline())
+        stdin = iter(sys.stdin)
 
-        while True:
-            line, prefix = getline(), ''
-            if line.startswith(','):
-                line, prefix = line[1:], ','
+        # The first two lines from i3status need to pass through unmodified
+        print(next(stdin), end='')
+        print(next(stdin), end='')
 
-            j = json.loads(line)
-            j = j[0:-2] + [WEATHER_JSON] + j[-2:]
-            sendline(prefix + json.dumps(j))
+        last_update = 0
+        weather = {'name': 'weather', 'full_text': ''}
+        try:
+            for line in stdin:
+                data = json.loads(line.lstrip(','))
+                data.insert(args.position, weather)
+                print((',' if line.startswith(',') else '') + json.dumps(data))
+                sys.stdout.flush()
 
-            if time.time() - UPDATE_INTERVAL > WEATHER_TIME or WEATHER_JSON['full_text'] == '':
-                WEATHER_JSON = {
-                    'name': 'weather',
-                    # Update the below line to your WOEID and preferred unit of temperature
-                    'full_text': get_weather(args.woeid, args.unit)
-                }
-                WEATHER_TIME = time.time()
+                if time.time() > last_update + args.update_interval:
+                    weather['full_text'] = _get_weather()
+                    last_update = time.time()
+        except KeyboardInterrupt:
+            sys.exit()
     else:
-        print(get_weather(args.woeid, args.unit))
+        print(_get_weather())

@@ -13,9 +13,12 @@ def get_weather(woeid, unit, format):
     url = ('http://weather.yahooapis.com/forecastrss?w={}&u={}'
            ''.format(woeid, unit.lower()))
     logging.info("Fetching %s" % url)
-    r = requests.get(url)
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        return ''
     if r.status_code != 200:
-        return 'weather: %s' % r.status_code
+        return 'HTTP error: %s' % r.status_code
 
     s = BeautifulSoup(r.text)
     data = {'unit': unit}
@@ -56,7 +59,8 @@ if __name__ == '__main__':
                 print((',' if line.startswith(',') else '') + json.dumps(data))
                 sys.stdout.flush()
 
-                if time.time() > last_update + args.update_interval:
+                if (time.time() > last_update + args.update_interval or
+                        weather['full_text'] == ''):
                     weather['full_text'] = _get_weather()
                     last_update = time.time()
         except KeyboardInterrupt:

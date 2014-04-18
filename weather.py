@@ -21,7 +21,7 @@ def get_weather(woeid, unit, format):
         return 'HTTP error: %s' % r.status_code
 
     s = BeautifulSoup(r.text)
-    data = {'unit': unit}
+    data = {'unit': unit.upper()}
     data.update(s.find('yweather:location').attrs)
     data.update(s.find('yweather:condition').attrs)
     return args.format.format(**data)

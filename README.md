@@ -20,21 +20,21 @@ The script retrieves various data about the weather conditions for the provided 
 
 The following format specifiers are supported:
 
-    - `{unit_temperature}` - temperature unit (`F` or `C`)
-    - `{unit_distance}` - distance unit (`mi` or `km`)
-    - `{unit_pressure}` - pressure unit (`in` or `mb`)
-    - `{unit_speed}` - speed unit (`mph` or `kph`)
-    - `{city}` - city associated with the input WOEID
-    - `{region}` - region (state/province) associated with the input WOEID
-    - `{country}` - country associated with the input WOEID
-    - `{wind_chill}` - windchill temperature
-    - `{wind_direction}` - direction (in degrees) of the wind
-    - `{wind_direction_fuzzy}` - fuzzy direction of the wind (N, NE, etc.)
-    - `{wind_speed}` - speed of the wind
-    - `{humidity}` - relative humidity
-    - `{visibility}` - visibility (I have no idea how this is measured)
-    - `{pressure}` - atmospheric pressure
-    - `{sunrise}` - sunrise time
-    - `{sunset}` - sunset time
-    - `{text}` - basic description of condition (e.g "Fair" or "Partly cloudy")
-    - `{temp}` - temperature
+  - `{unit_temperature}` - temperature unit (`F` or `C`)
+  - `{unit_distance}` - distance unit (`mi` or `km`)
+  - `{unit_pressure}` - pressure unit (`in` or `mb`)
+  - `{unit_speed}` - speed unit (`mph` or `kph`)
+  - `{city}` - city associated with the input WOEID
+  - `{region}` - region (state/province) associated with the input WOEID
+  - `{country}` - country associated with the input WOEID
+  - `{wind_chill}` - windchill temperature
+  - `{wind_direction}` - direction (in degrees) of the wind
+  - `{wind_direction_fuzzy}` - fuzzy direction of the wind (N, NE, etc.)
+  - `{wind_speed}` - speed of the wind
+  - `{humidity}` - relative humidity
+  - `{visibility}` - visibility (I have no idea how this is measured)
+  - `{pressure}` - atmospheric pressure
+  - `{sunrise}` - sunrise time
+  - `{sunset}` - sunset time
+  - `{text}` - basic description of condition (e.g "Fair" or "Partly cloudy")
+  - `{temp}` - temperature

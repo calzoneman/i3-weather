@@ -16,14 +16,16 @@ pipe through `weather.py --wrap-i3-status`. Example:
 
 ### Output Format
 
-The script retrieves various data about the weather conditions for the provided WOEID.  You can use various format specifiers with the `--format` flag to customize the output.  The default format is `{city}, {region}: {text}, {temp}°{unit_temperature}`, which produces an output similar to `Auburn, AL: Fair, 75°F`
+The script retrieves various data about the weather conditions for the provided WOEID.  You can use various format specifiers with the `--format` flag to customize the output.  The default format is `{city}, {region}: {text}, {temp}°{unit_temperature}`, which produces an output similar to `Auburn, AL: Fair, 75°F`.
+
+Your preferred unit of temperature can be set with `--unit f` or `--unit c` (this will also affect the other units: passing `--unit c` will also cause the speed unit to be `km/h` instead of `mph`)
 
 The following format specifiers are supported:
 
   - `{unit_temperature}` - temperature unit (`F` or `C`)
   - `{unit_distance}` - distance unit (`mi` or `km`)
   - `{unit_pressure}` - pressure unit (`in` or `mb`)
-  - `{unit_speed}` - speed unit (`mph` or `kph`)
+  - `{unit_speed}` - speed unit (`mph` or `km/h`)
   - `{city}` - city associated with the input WOEID
   - `{region}` - region (state/province) associated with the input WOEID
   - `{country}` - country associated with the input WOEID

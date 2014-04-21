@@ -1,4 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/python
+
+# For Python 2.7
+from __future__ import print_function
+
 import argparse
 from functools import partial
 import json
@@ -30,7 +34,7 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('woeid')
     p.add_argument('--format', metavar='F',
-                   default='{city}, {region}: {text}, {temp}°{unit}',
+                   default=u'{city}, {region}: {text}, {temp}\u00b0{unit}',
                    help="format string for output")
     p.add_argument('--position', metavar='P', type=int, default=-2,
                    help="position of output in JSON when wrapping i3status")

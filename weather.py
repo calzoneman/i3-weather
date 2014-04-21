@@ -13,6 +13,12 @@ import time
 
 from bs4 import BeautifulSoup
 
+def fuzzy_direction(degrees):
+    directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+    degrees = round(float(degrees) / 45)
+    index = int(degrees) % 8
+    return directions[index]
+
 def get_weather(woeid, unit, format):
     url = ('http://weather.yahooapis.com/forecastrss?w={}&u={}'
            ''.format(woeid, unit.lower()))
@@ -44,6 +50,7 @@ def get_weather(woeid, unit, format):
     # "what wind_direction does the weather have?"
     wind = s.find('yweather:wind')
     data.update(('wind_' + attr, wind.attrs[attr]) for attr in wind.attrs)
+    data['wind_direction_fuzzy'] = fuzzy_direction(data['wind_direction'])
     # Atmospheric conditions - humidity, visibility, pressure
     data.update(s.find('yweather:atmosphere').attrs)
     # Astronomical conditions - sunrise / sunset

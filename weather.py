@@ -25,16 +25,36 @@ def get_weather(woeid, unit, format):
         return 'HTTP error: %s' % r.status_code
 
     s = BeautifulSoup(r.text)
-    data = {'unit': unit.upper()}
+
+    data = {}
+
+    # Unit information
+    # Prefix each unit key with 'unit_' to prevent ambiguity, e.g.
+    # 'temp' vs. 'temperature'
+    units = s.find('yweather:units')
+    data.update(('unit_' + attr, units.attrs[attr]) for attr in units.attrs)
+    # Location information
     data.update(s.find('yweather:location').attrs)
+    # Basic conditions - simple description ("Fair", "Cloudy", etc), temperature
     data.update(s.find('yweather:condition').attrs)
+    # Wind conditions - speed, chill, direction (degrees)
+    # This is a little bit different from the others in that the attributes
+    # are prefixed with 'wind_'.  The justification for this is that it doesn't really
+    # make sense to ask "what direction does the weather have?", as opposed to
+    # "what wind_direction does the weather have?"
+    wind = s.find('yweather:wind')
+    data.update(('wind_' + attr, wind.attrs[attr]) for attr in wind.attrs)
+    # Atmospheric conditions - humidity, visibility, pressure
+    data.update(s.find('yweather:atmosphere').attrs)
+    # Astronomical conditions - sunrise / sunset
+    data.update(s.find('yweather:astronomy').attrs)
     return args.format.format(**data)
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('woeid')
     p.add_argument('--format', metavar='F',
-                   default=u'{city}, {region}: {text}, {temp}\u00b0{unit}',
+                   default=u'{city}, {region}: {text}, {temp}\u00b0{unit_temperature}',
                    help="format string for output")
     p.add_argument('--position', metavar='P', type=int, default=-2,
                    help="position of output in JSON when wrapping i3status")

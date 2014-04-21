@@ -19,6 +19,7 @@ pipe through `weather.py --wrap-i3-status`. Example:
 The script retrieves various data about the weather conditions for the provided WOEID.  You can use various format specifiers with the `--format` flag to customize the output.  The default format is `{city}, {region}: {text}, {temp}°{unit_temperature}`, which produces an output similar to `Auburn, AL: Fair, 75°F`
 
 The following format specifiers are supported:
+
     - `{unit_temperature}` - temperature unit (`F` or `C`)
     - `{unit_distance}` - distance unit (`mi` or `km`)
     - `{unit_pressure}` - pressure unit (`in` or `mb`)

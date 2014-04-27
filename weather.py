@@ -19,12 +19,12 @@ def fuzzy_direction(degrees):
     index = int(degrees) % 8
     return directions[index]
 
-def get_weather(woeid, unit, format):
+def get_weather(woeid, unit, format, timeout=None):
     url = ('http://weather.yahooapis.com/forecastrss?w={}&u={}'
            ''.format(woeid, unit.lower()))
     logging.info("Fetching %s" % url)
     try:
-        r = requests.get(url)
+        r = requests.get(url, timeout=timeout)
     except requests.exceptions.ConnectionError:
         return ''
     if r.status_code != 200:
@@ -70,9 +70,14 @@ if __name__ == '__main__':
     p.add_argument('--update-interval', metavar='I', type=int, default=60*3,
                    help="update interval in seconds")
     p.add_argument('--wrap-i3-status', action='store_true')
+    p.add_argument('--timeout', metavar='T', type=float, default=2,
+                   help="timeout on weather request")
     args = p.parse_args()
 
-    _get_weather = partial(get_weather, args.woeid, args.unit, args.format)
+    if args.timeout == 0:
+        args.timeout = None
+
+    _get_weather = partial(get_weather, args.woeid, args.unit, args.format, timeout=args.timeout)
 
     if args.wrap_i3_status:
         stdin = iter(sys.stdin)

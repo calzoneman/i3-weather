@@ -27,6 +27,8 @@ def get_weather(woeid, unit, format, timeout=None):
         r = requests.get(url, timeout=timeout)
     except requests.exceptions.ConnectionError:
         return ''
+    except requests.exceptions.Timeout:
+        return ''
     if r.status_code != 200:
         return 'HTTP error: %s' % r.status_code
 

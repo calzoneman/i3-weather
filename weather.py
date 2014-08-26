@@ -57,7 +57,7 @@ def get_weather(woeid, unit, format, timeout=None):
     data.update(s.find('yweather:atmosphere').attrs)
     # Astronomical conditions - sunrise / sunset
     data.update(s.find('yweather:astronomy').attrs)
-    return args.format.format(**data)
+    return format.format(**data)
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()

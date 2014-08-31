@@ -99,7 +99,10 @@ if __name__ == '__main__':
 
                 if (time.time() > last_update + args.update_interval or
                         weather['full_text'] == ''):
-                    weather['full_text'] = _get_weather()
+                    try:
+                        weather['full_text'] = _get_weather()
+                    except Exception as e:
+                        weather['full_text'] = u'{}: {}'.format(e.__class__.__name__, e)
                     last_update = time.time()
         except KeyboardInterrupt:
             sys.exit()

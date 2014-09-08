@@ -102,9 +102,14 @@ if __name__ == '__main__':
                     try:
                         weather['full_text'] = _get_weather()
                     except Exception as e:
-                        weather['full_text'] = u'{}: {}'.format(e.__class__.__name__, e)
+                        weather['full_text'] = ''
+                        print(u'{}: {}'.format(e.__class__.__name__, e), file=sys.stderr)
                     last_update = time.time()
         except KeyboardInterrupt:
             sys.exit()
     else:
-        print(_get_weather())
+        try:
+            print(_get_weather())
+        except Exception as e:
+            print(u'{}: {}'.format(e.__class__.__name__, e), file=sys.stderr)
+

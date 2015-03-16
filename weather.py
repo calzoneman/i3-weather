@@ -82,7 +82,7 @@ if __name__ == '__main__':
     _get_weather = partial(get_weather, args.woeid, args.unit, args.format, timeout=args.timeout)
 
     if args.wrap_i3_status:
-        stdin = iter(sys.stdin)
+        stdin = iter(sys.stdin.readline, '')
 
         # The first two lines from i3status need to pass through unmodified
         print(next(stdin), end='')

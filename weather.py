@@ -32,7 +32,7 @@ def get_weather(woeid, unit, format, timeout=None):
     if r.status_code != 200:
         return 'HTTP error: %s' % r.status_code
 
-    s = BeautifulSoup(r.text)
+    s = BeautifulSoup(r.text, 'html.parser')
 
     data = {}
 

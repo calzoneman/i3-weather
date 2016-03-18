@@ -32,6 +32,7 @@ The following format specifiers are supported:
   - `{wind_chill}` - windchill temperature
   - `{wind_direction}` - direction (in degrees) of the wind
   - `{wind_direction_fuzzy}` - fuzzy direction of the wind (N, NE, etc.)
+  - `{wind_direction_arrow}` - arrow direction of the wind (↓, ↘, etc.)
   - `{wind_speed}` - speed of the wind
   - `{humidity}` - relative humidity
   - `{visibility}` - visibility (I have no idea how this is measured)

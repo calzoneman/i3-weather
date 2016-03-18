@@ -19,6 +19,12 @@ def fuzzy_direction(degrees):
     index = int(degrees) % 8
     return directions[index]
 
+def arrow_direction(degrees):
+    directions = ['\u2193', '\u2199', '\u2190', '\u2196', '\u2191', '\u2197', '\u2192', '\u2198']
+    degrees = round(float(degrees) / 45)
+    index = int(degrees) % 8
+    return directions[index]
+
 def get_weather(woeid, unit, format, timeout=None):
     url = ('http://weather.yahooapis.com/forecastrss?w={}&u={}'
            ''.format(woeid, unit.lower()))
@@ -53,6 +59,7 @@ def get_weather(woeid, unit, format, timeout=None):
     wind = s.find('yweather:wind')
     data.update(('wind_' + attr, wind.attrs[attr]) for attr in wind.attrs)
     data['wind_direction_fuzzy'] = fuzzy_direction(data['wind_direction'])
+    data['wind_direction_arrow'] = arrow_direction(data['wind_direction'])
     # Atmospheric conditions - humidity, visibility, pressure
     data.update(s.find('yweather:atmosphere').attrs)
     # Astronomical conditions - sunrise / sunset

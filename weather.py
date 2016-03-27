@@ -1,8 +1,5 @@
 #!/usr/bin/python
 
-# For Python 2.7
-from __future__ import print_function
-
 import argparse
 from functools import partial
 import json
@@ -70,11 +67,11 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('woeid')
     p.add_argument('--format', metavar='F',
-                   default=u'{city}, {region}: {text}, {temp}\u00b0{unit_temperature}',
+                   default='{city}, {region}: {text}, {temp}\u00b0{unit_temperature}',
                    help="format string for output")
     p.add_argument('--position', metavar='P', type=int, default=-2,
                    help="position of output in JSON when wrapping i3status")
-    p.add_argument('--unit', metavar='U', default='f',
+    p.add_argument('--unit', metavar='', default='f',
                    help="unit for temperature")
     p.add_argument('--update-interval', metavar='I', type=int, default=60*3,
                    help="update interval in seconds")
@@ -110,7 +107,7 @@ if __name__ == '__main__':
                         weather['full_text'] = _get_weather()
                     except Exception as e:
                         weather['full_text'] = ''
-                        print(u'{}: {}'.format(e.__class__.__name__, e), file=sys.stderr)
+                        print('{}: {}'.format(e.__class__.__name__, e), file=sys.stderr)
                     last_update = time.time()
         except KeyboardInterrupt:
             sys.exit()
@@ -118,5 +115,5 @@ if __name__ == '__main__':
         try:
             print(_get_weather())
         except Exception as e:
-            print(u'{}: {}'.format(e.__class__.__name__, e), file=sys.stderr)
+            print('{}: {}'.format(e.__class__.__name__, e), file=sys.stderr)
 

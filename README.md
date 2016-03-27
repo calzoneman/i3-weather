@@ -4,7 +4,7 @@ i3-weather
 Simple Python script for grabbing weather information fron Yahoo and
 (optionally) outputting it to your i3 status line.
 
-Requires `requests` and `BeautifulSoup4`, both installable with `pip`.  Tested with Python 2.7.6 and Python 3.4.0 on Arch Linux.
+Requires `requests` and `BeautifulSoup4`, both installable with `pip`.  Tested with Python 3.4.0 on Arch Linux.
 
 To use this with i3, open `.i3/config` and update `status_command` to
 pipe through `weather.py --wrap-i3-status`. Example:

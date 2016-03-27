@@ -71,7 +71,7 @@ if __name__ == '__main__':
                    help="format string for output")
     p.add_argument('--position', metavar='P', type=int, default=-2,
                    help="position of output in JSON when wrapping i3status")
-    p.add_argument('--unit', metavar='', default='f',
+    p.add_argument('--unit', metavar='U', default='f',
                    help="unit for temperature")
     p.add_argument('--update-interval', metavar='I', type=int, default=60*3,
                    help="update interval in seconds")

@@ -7,8 +7,13 @@ import logging
 import requests
 import sys
 import time
+import urllib.parse
 
 from bs4 import BeautifulSoup
+
+BASE_WEATHER_URL = 'https://query.yahooapis.com/v1/public/yql?'
+WEATHER_QUERY = ('select * from weather.forecast where woeid={woeid} '
+                'and u="{unit}"')
 
 def fuzzy_direction(degrees):
     directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
@@ -23,8 +28,10 @@ def arrow_direction(degrees):
     return directions[index]
 
 def get_weather(woeid, unit, format, timeout=None):
-    url = ('http://weather.yahooapis.com/forecastrss?w={}&u={}'
-           ''.format(woeid, unit.lower()))
+    url = BASE_WEATHER_URL + urllib.parse.urlencode({
+        'q': WEATHER_QUERY.format(unit=unit, woeid=woeid),
+        'format': 'xml'
+    })
     logging.info("Fetching %s" % url)
     try:
         r = requests.get(url, timeout=timeout)

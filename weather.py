@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
 from functools import partial
@@ -26,6 +26,7 @@ def arrow_direction(degrees):
     degrees = round(float(degrees) / 45)
     index = int(degrees) % 8
     return directions[index]
+
 
 def get_weather(woeid, unit, format, timeout=None):
     url = BASE_WEATHER_URL + urllib.parse.urlencode({

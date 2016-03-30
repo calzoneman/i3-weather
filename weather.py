@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import argparse
 from functools import partial
 import json
@@ -13,20 +12,17 @@ from bs4 import BeautifulSoup
 
 BASE_WEATHER_URL = 'https://query.yahooapis.com/v1/public/yql?'
 WEATHER_QUERY = ('select * from weather.forecast where woeid={woeid} '
-                'and u="{unit}"')
+                 'and u="{unit}"')
 
 def fuzzy_direction(degrees):
-    directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-    degrees = round(float(degrees) / 45)
-    index = int(degrees) % 8
+    directions = 'N NE E SE S SW W NW'.split()
+    index = round(degrees / 45) % 8
     return directions[index]
 
 def arrow_direction(degrees):
-    directions = ['\u2193', '\u2199', '\u2190', '\u2196', '\u2191', '\u2197', '\u2192', '\u2198']
-    degrees = round(float(degrees) / 45)
-    index = int(degrees) % 8
-    return directions[index]
-
+    arrows = list('↓↙←↖↑↗→↘')
+    index = round(degrees / 45) % 8
+    return arrows[index]
 
 def get_weather(woeid, unit, format, timeout=None):
     url = BASE_WEATHER_URL + urllib.parse.urlencode({
@@ -63,8 +59,8 @@ def get_weather(woeid, unit, format, timeout=None):
     # "what wind_direction does the weather have?"
     wind = s.find('yweather:wind')
     data.update(('wind_' + attr, wind.attrs[attr]) for attr in wind.attrs)
-    data['wind_direction_fuzzy'] = fuzzy_direction(data['wind_direction'])
-    data['wind_direction_arrow'] = arrow_direction(data['wind_direction'])
+    data['wind_direction_fuzzy'] = fuzzy_direction(int(data['wind_direction']))
+    data['wind_direction_arrow'] = arrow_direction(int(data['wind_direction']))
     # Atmospheric conditions - humidity, visibility, pressure
     data.update(s.find('yweather:atmosphere').attrs)
     # Astronomical conditions - sunrise / sunset
@@ -124,4 +120,3 @@ if __name__ == '__main__':
             print(_get_weather())
         except Exception as e:
             print('{}: {}'.format(e.__class__.__name__, e), file=sys.stderr)
-

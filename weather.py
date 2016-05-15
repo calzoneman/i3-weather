@@ -4,6 +4,7 @@ from functools import partial
 import json
 import logging
 import requests
+import re
 import sys
 import time
 import urllib.parse
@@ -64,8 +65,17 @@ def get_weather(woeid, unit, format, timeout=None):
     # Atmospheric conditions - humidity, visibility, pressure
     data.update(s.find('yweather:atmosphere').attrs)
     # Astronomical conditions - sunrise / sunset
-    data.update(s.find('yweather:astronomy').attrs)
+    data.update(fix_sunrise_sunset(s.find('yweather:astronomy').attrs))
     return format.format(**data)
+
+sunrise_sunset_re = re.compile(r'(?P<hour>\d+):(?P<minute>\d+) (?P<am_pm>am|pm)')
+def fix_sunrise_sunset(attrs):
+    for key, value in attrs.items():
+        match = sunrise_sunset_re.fullmatch(value)
+        if match:
+            yield key, '{hour}:{minute:>02} {am_pm}'.format(**match.groupdict())
+        else:
+            yield key, value
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()

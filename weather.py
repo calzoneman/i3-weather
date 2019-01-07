@@ -1,109 +1,134 @@
 #!/usr/bin/env python3
 import argparse
+from datetime import datetime
 from functools import partial
 import json
-import logging
-import requests
-import re
+from pyowm import OWM
 import sys
 import time
-import urllib.parse
-
-from bs4 import BeautifulSoup
-
-BASE_WEATHER_URL = 'https://query.yahooapis.com/v1/public/yql?'
-WEATHER_QUERY = ('select * from weather.forecast where woeid={woeid} '
-                 'and u="{unit}"')
 
 def fuzzy_direction(degrees):
+    if not degrees:
+        return '?'
     directions = 'N NE E SE S SW W NW'.split()
     index = round(degrees / 45) % 8
     return directions[index]
 
 def arrow_direction(degrees):
+    if not degrees:
+        return '?'
     arrows = list('↓↙←↖↑↗→↘')
     index = round(degrees / 45) % 8
     return arrows[index]
 
-def get_weather(woeid, unit, format, timeout=None):
-    url = BASE_WEATHER_URL + urllib.parse.urlencode({
-        'q': WEATHER_QUERY.format(unit=unit, woeid=woeid),
-        'format': 'xml'
-    })
-    logging.info("Fetching %s" % url)
-    try:
-        r = requests.get(url, timeout=timeout)
-    except requests.exceptions.ConnectionError:
-        return ''
-    except requests.exceptions.Timeout:
-        return ''
-    if r.status_code != 200:
-        return 'HTTP error: %s' % r.status_code
+def unix_to_hhmm(ts):
+    dt = datetime.fromtimestamp(ts)
+    return dt.strftime('%H:%M')
 
-    s = BeautifulSoup(r.text, 'html.parser')
-
+def format_weather(obs, unit_temp, unit_speed, format_str):
     data = {}
+    data['unit_pressure'] = 'hPa'
+    if unit_temp == 'fahrenheit':
+        data['unit_temperature'] = 'F'
+    else:
+        data['unit_temperature'] = 'C'
+    if unit_speed == 'miles_hour':
+        data['unit_speed'] = 'mph'
+    else:
+        data['unit_speed'] = 'm/s'
 
-    # Unit information
-    # Prefix each unit key with 'unit_' to prevent ambiguity, e.g.
-    # 'temp' vs. 'temperature'
-    units = s.find('yweather:units')
-    data.update(('unit_' + attr, units.attrs[attr]) for attr in units.attrs)
-    # Location information
-    data.update(s.find('yweather:location').attrs)
-    # Basic conditions - simple description ("Fair", "Cloudy", etc), temperature
-    data.update(s.find('yweather:condition').attrs)
-    # Wind conditions - speed, chill, direction (degrees)
-    # This is a little bit different from the others in that the attributes
-    # are prefixed with 'wind_'.  The justification for this is that it doesn't really
-    # make sense to ask "what direction does the weather have?", as opposed to
-    # "what wind_direction does the weather have?"
-    wind = s.find('yweather:wind')
-    data.update(('wind_' + attr, wind.attrs[attr]) for attr in wind.attrs)
-    data['wind_direction_fuzzy'] = fuzzy_direction(int(data['wind_direction']))
-    data['wind_direction_arrow'] = arrow_direction(int(data['wind_direction']))
-    # Atmospheric conditions - humidity, visibility, pressure
-    data.update(s.find('yweather:atmosphere').attrs)
-    # Astronomical conditions - sunrise / sunset
-    data.update(fix_sunrise_sunset(s.find('yweather:astronomy').attrs))
-    return format.format(**data)
+    loc = obs.get_location()
+    weather = obs.get_weather()
 
-sunrise_sunset_re = re.compile(r'(?P<hour>\d+):(?P<minute>\d+) (?P<am_pm>am|pm)')
-def fix_sunrise_sunset(attrs):
-    for key, value in attrs.items():
-        match = sunrise_sunset_re.fullmatch(value)
-        if match:
-            yield key, '{hour}:{minute:>02} {am_pm}'.format(**match.groupdict())
-        else:
-            yield key, value
+    data['city'] = loc.get_name()
+    data['country'] = loc.get_country()
+    data['temp'] = round(weather.get_temperature(unit=unit_temp)['temp'])
+    data['text'] = weather.get_detailed_status()
+    data['humidity'] = weather.get_humidity()
+    data['pressure'] = weather.get_pressure()['press']
+
+    wind = weather.get_wind(unit=unit_speed)
+    # Wind direction is sometimes unset; I'm assuming this occurs when
+    # different weather stations for the same location report the wind
+    # blowing in conflicting directions
+    if 'deg' not in wind:
+        wind['deg'] = None
+    data['wind_speed'] = round(wind['speed'])
+    data['wind_direction'] = wind['deg']
+    data['wind_direction_fuzzy'] = fuzzy_direction(wind['deg'])
+    data['wind_direction_arrow'] = arrow_direction(wind['deg'])
+
+    data['sunrise'] = unix_to_hhmm(weather.get_sunrise_time())
+    data['sunset'] = unix_to_hhmm(weather.get_sunset_time())
+    return format_str.format(**data)
+
+def count_set(*args):
+    count = 0
+    for a in args:
+        if a:
+            count += 1
+    return count
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
-    p.add_argument('woeid')
     p.add_argument('--format', metavar='F',
-                   default='{city}, {region}: {text}, {temp}\u00b0{unit_temperature}',
+                   default='{city}, {country}: {text}, '
+                           '{temp}\u00b0{unit_temperature}',
                    help="format string for output")
     p.add_argument('--position', metavar='P', type=int, default=-2,
                    help="position of output in JSON when wrapping i3status")
-    p.add_argument('--unit', metavar='U', default='f',
+    p.add_argument('--unit-temperature', metavar='U', default='fahrenheit',
+                   choices=['fahrenheit', 'celsius'],
                    help="unit for temperature")
-    p.add_argument('--update-interval', metavar='I', type=int, default=60*3,
-                   help="update interval in seconds")
+    p.add_argument('--unit-speed', metavar='U', default='miles_hour',
+                   choices=['miles_hour', 'meters_sec'],
+                   help="unit for wind speed")
+    p.add_argument('--update-interval', metavar='I', type=int, default=60*10,
+                   help="update interval in seconds (default: 10 minutes)")
     p.add_argument('--wrap-i3-status', action='store_true')
-    p.add_argument('--timeout', metavar='T', type=float, default=2,
-                   help="timeout on weather request")
+    p.add_argument('--zip', type=str,
+                   help='retrieve weather by postal/zip code')
+    p.add_argument('--zip-country', type=str, default='US',
+                   help='set country for zip code lookup (defaults to US)')
+    p.add_argument('--city-id', type=int, help='retrieve weather by city ID')
+    p.add_argument('--place', type=str,
+                   help='retrieve weather by city,country name')
+    p.add_argument('--api-key', type=str, required=True,
+                   help='OpenWeatherMap API key')
     args = p.parse_args()
 
-    if args.timeout == 0:
-        args.timeout = None
+    num_location_args = count_set(args.zip, args.place, args.city_id)
+    if num_location_args == 0:
+        raise Exception('Must specify one of --zip, --city-id, --location')
+    elif num_location_args > 1:
+        raise Exception('Cannot specify more than one of --zip, --city-id, '
+                        '--location')
 
-    _get_weather = partial(get_weather, args.woeid, args.unit, args.format, timeout=args.timeout)
+    owm = OWM(API_key=args.api_key, version='2.5')
+
+    if args.zip:
+        get_observation = partial(owm.weather_at_zip_code, args.zip,
+                                  args.zip_country)
+    elif args.city_id:
+        get_observation = partial(owm.weather_at_id, args.city_id)
+    else:
+        get_observation = partial(owm.weather_at_place, args.place)
+
+    def _get_weather():
+        return format_weather(get_observation(),
+                              args.unit_temperature, args.unit_speed,
+                              args.format)
 
     if args.wrap_i3_status:
         stdin = iter(sys.stdin.readline, '')
 
-        # The first two lines from i3status need to pass through unmodified
-        print(next(stdin), end='')
+        header = next(stdin)
+        if json.loads(header)['version'] != 1:
+            raise Exception('Unrecognized version of i3status: ' +
+                            header.strip())
+
+        print(header, end='')
+        # First line after header is '[' (open JSON array)
         print(next(stdin), end='')
 
         last_update = 0
@@ -121,7 +146,8 @@ if __name__ == '__main__':
                         weather['full_text'] = _get_weather()
                     except Exception as e:
                         weather['full_text'] = ''
-                        print('{}: {}'.format(e.__class__.__name__, e), file=sys.stderr)
+                        print('{}: {}'.format(e.__class__.__name__, e),
+                              file=sys.stderr)
                     last_update = time.time()
         except KeyboardInterrupt:
             sys.exit()

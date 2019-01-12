@@ -11,9 +11,8 @@ virtualenv or else install the dependencies through your distribution's package
 manager.
 
 
-    $ virtualenv .env
-    $ source .env/bin/activate
-    (.env) $ pip install -r requirements.txt
+    $ python3 -m venv .env
+    $ .env/bin/pip install -r requirements.txt
 
 ### OpenWeatherMap
 
@@ -67,27 +66,23 @@ information about locations.
 i3-weather retrieves weather information from OpenWeatherMap for the provided
 location and formats the result from a user-provided format string (given with
 `--format`).  The default format is `{city}, {country}: {text},
-{temp}°{unit_temperature}`, which produces an output similar to `Seattle, US:
+{temp_f}°F`, which produces an output similar to `Seattle, US:
 light rain, 43°F`.
-
-The default units are imperial (degrees Fahrenheit, wind speed in MPH).  You can
-change the temperature and wind speed units to metric with `--unit-temperature
-celsius` and `--unit-speed meters_sec`, respectively.
 
 The following format specifiers are supported:
 
-  - `{unit_temperature}` - temperature unit (`F` or `C`)
-  - `{unit_pressure}` - pressure unit (`hPa`)
-  - `{unit_speed}` - speed unit (`mph` or `m/s`)
   - `{city}` - city name associated with the input location
   - `{country}` - country name associated with the input location
   - `{wind_direction}` - direction (in degrees) of the wind
   - `{wind_direction_fuzzy}` - fuzzy direction of the wind (N, NE, etc.)
   - `{wind_direction_arrow}` - arrow direction of the wind (↓, ↙, etc.)
-  - `{wind_speed}` - speed of the wind
+  - `{wind_speed_mph}` - speed of the wind in miles per hour
+  - `{wind_speed_ms}` - speed of the wind in meters per second
   - `{humidity}` - relative humidity
-  - `{pressure}` - atmospheric pressure
-  - `{sunrise}` - sunrise time
-  - `{sunset}` - sunset time
+  - `{pressure}` - atmospheric pressure in hectopascals (millibars)
+  - `{sunrise}` - sunrise time (in current time zone)
+  - `{sunset}` - sunset time (in current time zone)
   - `{text}` - basic description of condition (e.g "Fair" or "Partly cloudy")
-  - `{temp}` - temperature
+  - `{temp_f}` - temperature in Fahrenheit
+  - `{temp_c}` - temperature in Celsius
+  - `{temp_k}` - temperature in Kelvin

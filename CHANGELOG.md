@@ -15,6 +15,15 @@ OpenWeatherMap instead.
     OpenWeatherMap's results only include city and country, not state/province
   * The `{visibility}` and `{wind_chill}` format specifiers are no longer
     supported
+  * The `{wind_speed}` and `{unit_speed}` format specifiers have been replaced
+    by `{wind_speed_mph}` and `{wind_speed_ms}`
+  * The `{temp}` and `{unit_temperature}` format specifiers have been replaced
+    by `{temp_f}`, `{temp_c}`, and `{temp_k}`
+  * The `{unit_pressure}` format specifier has been removed.  The atmospheric
+    pressure is always reported in hectopascals (millibars)
+  * `--timeout` was removed.  pyowm uses a default timeout of 2 seconds, and I
+    plan to additionally do some refactoring to prevent the weather lookup from
+    blocking i3status output
   * OpenWeatherMap uses a different location model than Yahoo's WOEIDs, so you
     will need to specify the location differently
   * i3-weather now depends on `pyowm` and no longer depends on `requests` or

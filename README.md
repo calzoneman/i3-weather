@@ -78,6 +78,7 @@ The following format specifiers are supported:
   - `{wind_direction_arrow}` - arrow direction of the wind (↓, ↙, etc.)
   - `{wind_speed_mph}` - speed of the wind in miles per hour
   - `{wind_speed_ms}` - speed of the wind in meters per second
+  - `{wind_speed_kmh}` - speed of the wind in kilometers per hour
   - `{humidity}` - relative humidity
   - `{pressure}` - atmospheric pressure in hectopascals (millibars)
   - `{sunrise}` - sunrise time (in current time zone)

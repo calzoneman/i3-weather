@@ -14,5 +14,7 @@ fi
 .env/bin/python weather.py \
     --api-key $OWM_KEY \
     --city-id $OWM_CITY_ID \
-    --format "{city}, {country}: {text}, {temp_f}°F ({temp_c}°C, {temp_k}K), Relative humidity {humidity}%, Wind: {wind_speed_mph} MPH ({wind_speed_ms} m/s) from {wind_direction}° ({wind_direction_arrow} {wind_direction_fuzzy}), Daylight from {sunrise} to {sunset}, Pressure {pressure} millibars"
+    --format "{city}, {country}: {text}, {temp_f}°F ({temp_c}°C, {temp_k}K),
+    Relative humidity {humidity}%, Wind: {wind_speed_mph} MPH ({wind_speed_ms}
+    m/s, {wind_speed_kmh} km/h)  from {wind_direction}° ({wind_direction_arrow} {wind_direction_fuzzy}), Daylight from {sunrise} to {sunset}, Pressure {pressure} millibars"
 

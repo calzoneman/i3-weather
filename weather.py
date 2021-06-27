@@ -7,12 +7,14 @@ from pyowm import OWM
 import sys
 import time
 
+
 def fuzzy_direction(degrees):
     if not degrees:
         return '?'
     directions = 'N NE E SE S SW W NW'.split()
     index = round(degrees / 45) % 8
     return directions[index]
+
 
 def arrow_direction(degrees):
     if not degrees:
@@ -21,9 +23,11 @@ def arrow_direction(degrees):
     index = round(degrees / 45) % 8
     return arrows[index]
 
+
 def unix_to_hhmm(ts):
     dt = datetime.fromtimestamp(ts)
     return dt.strftime('%H:%M')
+
 
 def format_weather(obs, format_str):
     data = {}
@@ -45,6 +49,7 @@ def format_weather(obs, format_str):
     # blowing in conflicting directions
     data['wind_direction'] = round(wind['deg']) if 'deg' in wind else None
     data['wind_speed_ms'] = round(wind['speed'])
+    data['wind_speed_kmh'] = round(weather.get_wind(unit='km_hour')['speed'])
     data['wind_speed_mph'] = round(weather.get_wind(unit='miles_hour')['speed'])
     data['wind_direction_fuzzy'] = fuzzy_direction(data['wind_direction'])
     data['wind_direction_arrow'] = arrow_direction(data['wind_direction'])
@@ -52,6 +57,7 @@ def format_weather(obs, format_str):
     data['sunrise'] = unix_to_hhmm(weather.get_sunrise_time())
     data['sunset'] = unix_to_hhmm(weather.get_sunset_time())
     return format_str.format(**data)
+
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
@@ -62,7 +68,7 @@ if __name__ == '__main__':
                    help="format string for output")
     p.add_argument('--position', metavar='P', type=int, default=-2,
                    help="position of output in JSON when wrapping i3status")
-    p.add_argument('--update-interval', metavar='I', type=int, default=60*10,
+    p.add_argument('--update-interval', metavar='I', type=int, default=60 * 10,
                    help="update interval in seconds (default: 10 minutes)")
     p.add_argument('--wrap-i3-status', action='store_true')
     p.add_argument('--zip-country', type=str, default='US',
@@ -70,10 +76,10 @@ if __name__ == '__main__':
 
     loc = p.add_mutually_exclusive_group(required=True)
     loc.add_argument('--zip', type=str,
-                   help='retrieve weather by postal/zip code')
+                     help='retrieve weather by postal/zip code')
     loc.add_argument('--city-id', type=int, help='retrieve weather by city ID')
     loc.add_argument('--place', type=str,
-                   help='retrieve weather by city,country name')
+                     help='retrieve weather by city,country name')
     args = p.parse_args()
 
     owm = OWM(API_key=args.api_key, version='2.5')
